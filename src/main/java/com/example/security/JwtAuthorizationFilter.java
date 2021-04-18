@@ -39,42 +39,46 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
-		super.doFilterInternal(request, response, chain);
-		System.out.println("================================================JwtAuthorizationFilter : 인증이 필요한 request");
+//		super.doFilterInternal(request, response, chain); -> 이거 안지우면 응답을 두번 타서 오루 발생
+//		System.out.println("================================================JwtAuthorizationFilter : 인증이 필요한 request");
 		
-		String jwtHeader = request.getHeader("Authorization");
-		System.out.println("================================================jwtHeader : " + jwtHeader);
+		String jwtHeader = request.getHeader(JwtProperties.HEADER_STRING);
+//		System.out.println("================================================jwtHeader : " + jwtHeader);
 		
 		//헤더가 없거나 잘못된 경우이면 필터 타고 그냥 빼버리기
-		if(jwtHeader == null || !jwtHeader.startsWith("Bearer ")) {
+		if(jwtHeader == null || !jwtHeader.startsWith(JwtProperties.TOKEN_PREFIX)) {
 			chain.doFilter(request, response);
 			return;
 		} 
 		else {
-			String jwtToken = request.getHeader("Authorization").replace("Bearer ", "");
+			String jwtToken = request.getHeader(JwtProperties.HEADER_STRING).replace(JwtProperties.TOKEN_PREFIX, "");
 			
 			String username = 
 				JWT
-					.require(Algorithm.HMAC512("MIN"))
+					.require(Algorithm.HMAC512(JwtProperties.SECRET))
 					.build()
 					.verify(jwtToken)
 					.getClaim("username")
 					.asString();
+			
 			if(username != null) {
-				System.out.println("================================================인증된 사용자 request 토큰 정상 인증 완료!");
+//				System.out.println("================================================인증된 사용자 request 토큰 정상 인증 완료!");
 				User user = userRepository.findByUsername(username);
-				
+//				System.out.println("================================================ : " + user);
 				PrincipalDetails principalDetails = new PrincipalDetails(user);
+//				System.out.println("================================================ principalDetails : " + principalDetails.getUsername());
 				
 				//jwt토큰 정상 서명을 통해 만든 auth객체
 				Authentication authentication = 
 					new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());
+//				System.out.println("================================================ authentication : " + authentication);
+				
 				
 				//security내 저장 세션에 authentication정보 저장
 				//로그인 완료
 				SecurityContextHolder.getContext().setAuthentication(authentication);
-				chain.doFilter(request, response);
 			}
+			chain.doFilter(request, response);
 		}
 	}
 }

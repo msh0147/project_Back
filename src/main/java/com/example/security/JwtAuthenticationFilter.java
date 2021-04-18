@@ -40,24 +40,24 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 	public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
 			throws AuthenticationException {
 		
-		System.out.println("================================================JwtAuthenticationFilter : LoginProcessing");
+//		System.out.println("================================================JwtAuthenticationFilter : LoginProcessing");
 		
 		try {
 //			System.out.println(request.getInputStream());
 			ObjectMapper om = new ObjectMapper();
 			User user = om.readValue(request.getInputStream(), User.class);
-			System.out.println("================================================Login inputData : " + user);
+//			System.out.println("================================================Login inputData : " + user);
 			
 			//로그인 정보 토큰 생성 loadByUsername실행() -> username & password저장
 			UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());
 			//정상이면 토큰 생성 & 로그인 성공(아이디와 패스워드 일치)
 			Authentication authentication = authenticationManager.authenticate(authenticationToken);
-			System.out.println("================================================authentication : " + authentication);
+//			System.out.println("================================================authentication : " + authentication);
 			
 			//백엔드 세션영역에 로그인 정보 저장(토큰만 사용할 거면 굳이 안만들어도 됨,,, back에서 시큐리티 권한 관리 사용하기 위해 만들은 거)
 			PrincipalDetails principalDetails = (PrincipalDetails)authentication.getPrincipal();
-			System.out.println("================================================authenticationSuccessLogin : " + principalDetails);
-			System.out.println("================================================Logined ID : " + principalDetails.getUser().getUsername());
+//			System.out.println("================================================authenticationSuccessLogin : " + principalDetails);
+//			System.out.println("================================================Logined ID : " + principalDetails.getUser().getUsername());
 			
 			return authentication;
 		}
@@ -76,21 +76,21 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
 			Authentication authResult) throws IOException, ServletException {
 		
-		System.out.println("================================================successfulAuthentication : Login Success!");
-		System.out.println("================================================Login Result : " + authResult);
+//		System.out.println("================================================successfulAuthentication : Login Success!");
+//		System.out.println("================================================Login Result : " + authResult);
 		PrincipalDetails principalDetails = (PrincipalDetails)authResult.getPrincipal();
 		
 		//Hash 암호방식 => HMAC512는 서버만 아는 secret값이 있어야함
 		String jwtToken = JWT.create()
 			.withSubject(principalDetails.getUsername()) //토큰 명
-			.withExpiresAt(new Date(System.currentTimeMillis() + (60000 * 10))) //만료 기간(10분으로 지정)
+			.withExpiresAt(new Date(System.currentTimeMillis() + JwtProperties.EXPIRATION_TIME)) //만료 기간(10분으로 지정)
 			//토큰에 담을 값 지정
 			.withClaim("id", principalDetails.getUser().getId())
 			.withClaim("username", principalDetails.getUser().getUsername())
-			.sign(Algorithm.HMAC512("MIN"));//내 서버만 아는 고유한 SECRET값 지정
+			.sign(Algorithm.HMAC512(JwtProperties.SECRET));//내 서버만 아는 고유한 SECRET값 지정
 		
-		System.out.println("================================================jwtToken : " + jwtToken);
+//		System.out.println("================================================jwtToken : " + jwtToken);
 		
-		response.addHeader("Authorization", "Bearer " + jwtToken); //Bearer방식 사용
+		response.addHeader(JwtProperties.HEADER_STRING, JwtProperties.TOKEN_PREFIX + jwtToken); //Bearer방식 사용
 	}
 }

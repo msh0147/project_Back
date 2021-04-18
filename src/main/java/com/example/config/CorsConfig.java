@@ -28,7 +28,7 @@ public class CorsConfig {
 		//all method
 		config.addAllowedMethod("*"); 
 		//register corsConfig
-		source.registerCorsConfiguration("/poject/**", config);
+		source.registerCorsConfiguration("/project/**", config);
 		
 		return new CorsFilter(source);
 	}

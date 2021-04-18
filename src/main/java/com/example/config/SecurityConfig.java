@@ -48,16 +48,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 			
 			//CorsFilter 등록(Cors 등록 정책에서 허용) -> CrossOrigin은 인증이 필요한 요청은 다 거부됨
 			.addFilter(corsFilter)
-		
+			
 			.formLogin().disable()
 			.httpBasic().disable()
 			.addFilter(new JwtAuthenticationFilter(authenticationManager()))
 			.addFilter(new JwtAuthorizationFilter(authenticationManager(), userRepository))
-			.authorizeRequests()
+			.authorizeRequests()			
 				.antMatchers("/api/user/**")
-					.access("hasRole('USER') or hasRole('ADMIN')")
+					.access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
 				.antMatchers("/api/admin/**")
-					.access("hasRole('ADMIN')")
+					.access("hasRole('ROLE_ADMIN')")
 				.anyRequest()
 					.permitAll();
 	}

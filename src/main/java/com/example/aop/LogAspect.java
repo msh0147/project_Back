@@ -29,7 +29,7 @@ public class LogAspect {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");    
 		Date resultdate = new Date(start);
 		
-		logger.info("AOP Test : Before ======================");
+		logger.info("AOP Test : ====================== Before ======================");
 		logger.info(sdf.format(resultdate)+"");   
     }
 	
@@ -40,7 +40,7 @@ public class LogAspect {
 		Date resultdate = new Date(start);
 		
 		logger.info(sdf.format(resultdate)+"");
-        logger.info("AOP Test : After =======================");
+        logger.info("AOP Test : ====================== After =======================");
     }
 	
 	@Around("execution(* com.example.controller.*Controller.*(..)) or execution(* com.example.service.*Service.*(..))")
